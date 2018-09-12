@@ -1,0 +1,86 @@
+
+.mobilize-america-map {
+    height: 30em;
+    background: #00d084;
+}
+
+.mobilize-america-events {
+    border-top: 1px solid #263873;
+}
+
+.mobilize-america-events .ma-event {
+    border: 1px solid #263873;
+    border-width: 0 1px 1px;
+    padding: 1em;
+    margin: 0;
+    list-style-type: none;
+    overflow: hidden;
+    background: #f5f8fa;
+    color: #292b2c;
+}
+.mobilize-america-events .ma-event img {
+    float: right;
+    max-width: 30%;
+    margin: 0 0 0 1em;
+    display: block;
+    border: 5px solid #fff;
+}
+.mobilize-america-events .ma-event img[src=""] {
+    display: none;
+}
+.mobilize-america-events .ma-event h2 {
+    clear: none;
+    padding: 0;
+    margin: -1em -1em 0.5em;
+    padding: 1em 1.5em 0.5em;
+    font-weight: 900;
+    color: #fff;
+    background-color: #263873;
+}
+
+.mobilize-america-events .ma-event .summary {
+    max-height: 6em;
+    overflow: hidden;
+}
+.mobilize-america-events .ma-event.expanded .summary {
+    max-height: none;
+}
+.mobilize-america-events .ma-event .button.show-more {
+    float: none;
+    display: block;
+    margin: -1em auto 0;
+}
+.mobilize-america-events .ma-event.expanded .button.show-more {
+    display: none;
+}
+
+.mobilize-america-events .ma-event > time {
+    font-size: 0.8em;
+    font-style: italic;
+}
+.mobilize-america-events .ma-event .timeslots {
+    font-size: 0.8em;
+    font-style: italic;
+    margin-bottom: 1em;
+}
+.mobilize-america-events .ma-event .timeslots.qty-timeslots-1 {
+    list-style-type: none;
+}
+.mobilize-america-events .ma-event address {
+    float: left;
+}
+.mobilize-america-events .ma-event .button {
+    display: block;
+    padding: 0.5em 1em;
+    float: right;
+    color: #fff;
+    background: #263873;
+    border: 1px solid #263873;
+    border-radius: 0.3rem;
+    box-shadow: none;
+    text-transform: uppercase;
+    font-weight: 900;
+}
+.mobilize-america-events .ma-event .button:hover {
+    background: #131c39;
+}
