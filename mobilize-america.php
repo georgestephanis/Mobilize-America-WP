@@ -157,23 +157,29 @@ class Mobilize_America {
 		wp_enqueue_style('mobilize-america-map', plugins_url('/mobilize-america.css', __FILE__) );
 
 		$return .= '<h3 id="events-list">' . __( 'Upcoming Events:' ) . '</h3>';
+		$return .= '<p class="mobilize-america-event-types">' . __( 'Filter by type: ' ) . '<span id="event-' . esc_attr( $slug ) . '-types"></span></p>';
 		$return .= "\r\n<ul id='events-{$slug}' class='mobilize-america-events'></ul>\r\n";
 
 		$return .= '<script type="text/html" id="tmpl-mobilize-america-event">
-			<li class="vevent ma-event event-{{ data.id }}">
+			<li class="vevent ma-event event-{{ data.id }} event-type-{{ data.event_type }}">
 				<img src="{{ data.featured_image_url }}" />
 				<h2>{{ data.title }}</h2>
 				<time class="dtstart" datetime="{{ data._date }}">{{ data.date }}</time>
+				
 				<section class="summary">
 				    <p>{{ data.description }}</p>
 				</section>
                 <button class="show-more button" onclick=";">' . esc_html__( 'Show More…' ) . '</button>
-				<ul class="timeslots qty-timeslots-{{ data.qty_timeslots }}">{{{ data.timeslots_formatted }}}</ul>
+                
+				<# if ( data.location ) { #>
 				<address class="location">
 					<a href="{{ data.gmaps_link }}" target="_blank"><strong>{{ data.location.venue }}</strong> 🗺️🔗</a> <br />
 					{{ data.location.address_lines[0] }}<br />
 					{{ data.location.locality }}, {{ data.location.region }} {{ data.location.postal_code }}
 				</address>
+				<# } #>
+				
+				<ul class="timeslots qty-timeslots-{{ data.qty_timeslots }}">{{{ data.timeslots_formatted }}}</ul>
 				<a href="{{ data.browser_url }}" class="url button button-primary" target="_blank">Sign Up &rarr;</a>
 			</li>
 		</script>';
@@ -184,6 +190,9 @@ class Mobilize_America {
 	public static function group_events_by_location( $events ) {
 		$by_location = array();
 		foreach ( $events as $event ) {
+		    if ( ! is_object( $event->location ) ) {
+		        continue;
+            }
 			$key = "{$event->location->venue} - {$event->location->location->latitude},{$event->location->location->longitude}";
 			$by_location[ $key ]['location'] = $event->location;
 			$by_location[ $key ]['events'][] = $event->id;
@@ -208,6 +217,12 @@ class Mobilize_America {
 			$response = wp_remote_get( $url );
 			$body     = wp_remote_retrieve_body( $response );
 			$events   = json_decode( $body );
+
+			if ( ! $events ) {
+			    return (object) array(
+                    'events' => array(),
+                );
+            }
 
 			usort( $events->data, array( __CLASS__, 'sort_events_by_date' ) );
 			$events->data = array_map( array( __CLASS__, 'format_event_object' ), $events->data );
@@ -239,17 +254,18 @@ class Mobilize_America {
 			$timeslots_formatted = wp_list_pluck( $event->timeslots, 'formatted' );
 			$timeslots_formatted = array_map( 'esc_html', $timeslots_formatted );
 			$event->timeslots_formatted = '<li>' . implode( '</li><li>', $timeslots_formatted ) . '</li>';
-
-			$event->gmaps_link = add_query_arg( array(
-				'api' => 1,
-				'query' => implode( ' ', array(
-						implode( ' ', $event->location->address_lines ),
-						$event->location->locality . ',',
-						$event->location->region,
-						$event->location->postal_code,
-					)
-				),
-			), 'https://www.google.com/maps/search/' );
+            if ( is_object( $event->location ) ) {
+	            $event->gmaps_link = add_query_arg( array(
+		            'api'   => 1,
+		            'query' => implode( ' ', array(
+				            implode( ' ', $event->location->address_lines ),
+				            $event->location->locality . ',',
+				            $event->location->region,
+				            $event->location->postal_code,
+			            )
+		            ),
+	            ), 'https://www.google.com/maps/search/' );
+            }
 		}
 		return $event;
 	}

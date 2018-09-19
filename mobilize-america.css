@@ -4,6 +4,18 @@
     background: #00d084;
 }
 
+.mobilize-america-event-types a.current {
+    font-weight: 900;
+}
+
+.mobilize-america-event-types a:after {
+    content: ',';
+}
+
+.mobilize-america-event-types a:last-child:after {
+    content: '';
+}
+
 .mobilize-america-events {
     border-top: 1px solid #263873;
 }
@@ -39,6 +51,7 @@
 }
 
 .mobilize-america-events .ma-event .summary {
+    display: none !important;
     max-height: 6em;
     overflow: hidden;
 }
@@ -46,6 +59,7 @@
     max-height: none;
 }
 .mobilize-america-events .ma-event .button.show-more {
+    display: none !important;
     float: none;
     display: block;
     margin: -1em auto 0;
@@ -58,6 +72,11 @@
     font-size: 0.8em;
     font-style: italic;
 }
+
+.mobilize-america-events .ma-event address {
+    float: none;
+}
+
 .mobilize-america-events .ma-event .timeslots {
     font-size: 0.8em;
     font-style: italic;
@@ -66,9 +85,10 @@
 .mobilize-america-events .ma-event .timeslots.qty-timeslots-1 {
     list-style-type: none;
 }
-.mobilize-america-events .ma-event address {
-    float: left;
+.mobilize-america-events .ma-event .timeslots li {
+    margin: 0;
 }
+
 .mobilize-america-events .ma-event .button {
     display: block;
     padding: 0.5em 1em;
