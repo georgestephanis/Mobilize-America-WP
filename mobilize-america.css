@@ -110,7 +110,8 @@
 }
 
 @media screen and (min-width: 768px) {
-    article.entry {
+    article.entry,
+    article.page {
         position: relative;
         width: 100%;
         max-width: none;
