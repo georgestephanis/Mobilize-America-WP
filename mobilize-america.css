@@ -4,6 +4,10 @@
     background: #00d084;
 }
 
+#events-list {
+    margin-top: 0;
+}
+
 .mobilize-america-event-types a.current {
     font-weight: 900;
 }
@@ -103,4 +107,40 @@
 }
 .mobilize-america-events .ma-event .button:hover {
     background: #131c39;
+}
+
+@media screen and (min-width: 768px) {
+    article.entry {
+        position: relative;
+        width: 100%;
+        max-width: none;
+        padding-left: 0;
+        padding-right: 0;
+    }
+    .entry__body {
+        width: 100%;
+        padding: 0 0 0 60vw;
+        margin: 0 0 0 0;
+        box-sizing: border-box;
+        position: relative;
+    }
+    .mobilize-america-map {
+        height: 100vh;
+        max-height: 100%;
+        width: 60vw;
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+    .mobilize-america-map.fixed {
+        position: fixed;
+    }
+    .mobilize-america-map.fixed.fixed-bottom {
+        position: absolute;
+        top: auto;
+        bottom: 0;
+    }
+    ul.mobilize-america-events {
+        margin-left: 0;
+    }
 }
