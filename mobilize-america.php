@@ -159,19 +159,25 @@ class Mobilize_America {
 		$return .= '<div id="events-list">';
 		$return .= '<p class="mobilize-america-event-types">' . __( 'Filter by type: ' ) . '<span id="event-' . esc_attr( $slug ) . '-types"></span></p>';
 		$return .= "\r\n<ul id='events-{$slug}' class='mobilize-america-events'></ul>\r\n";
-        $return .= '</div>';
+		$return .= '</div>';
 
 		$return .= '<script type="text/html" id="tmpl-mobilize-america-event">
 			<li class="vevent ma-event event-{{ data.id }} event-type-{{ data.event_type }}">
-				<img src="{{ data.featured_image_url }}" />
+				<# if ( data.featured_image_url ) { #>
+					<img src="{{ data.featured_image_url }}" />
+				<# } else { #>
+					<svg>
+						<use xlink:href="#logo"></use>
+					</svg>
+				<# } #>
 				<h2>{{ data.title }}</h2>
 				<time class="dtstart" datetime="{{ data._date }}">{{ data.date }}</time>
 				
 				<section class="summary">
-				    <p>{{ data.description }}</p>
+					<p>{{ data.description }}</p>
 				</section>
-                <button class="show-more button" onclick=";">' . esc_html__( 'Show More…' ) . '</button>
-                
+				<button class="show-more button" onclick=";">' . esc_html__( 'Show More…' ) . '</button>
+				
 				<# if ( data.location ) { #>
 				<address class="location">
 					<a href="{{ data.gmaps_link }}" target="_blank"><strong>{{ data.location.venue }}</strong></a> <br />
@@ -191,9 +197,9 @@ class Mobilize_America {
 	public static function group_events_by_location( $events ) {
 		$by_location = array();
 		foreach ( $events as $event ) {
-		    if ( ! is_object( $event->location ) ) {
-		        continue;
-            }
+			if ( ! is_object( $event->location ) ) {
+				continue;
+			}
 			$key = "{$event->location->venue} - {$event->location->location->latitude},{$event->location->location->longitude}";
 			$by_location[ $key ]['location'] = $event->location;
 			$by_location[ $key ]['events'][] = $event->id;
@@ -220,10 +226,10 @@ class Mobilize_America {
 			$events   = json_decode( $body );
 
 			if ( ! $events ) {
-			    return (object) array(
-                    'events' => array(),
-                );
-            }
+				return (object) array(
+					'events' => array(),
+				);
+			}
 
 			usort( $events->data, array( __CLASS__, 'sort_events_by_date' ) );
 			$events->data = array_map( array( __CLASS__, 'format_event_object' ), $events->data );
@@ -255,18 +261,18 @@ class Mobilize_America {
 			$timeslots_formatted = wp_list_pluck( $event->timeslots, 'formatted' );
 			$timeslots_formatted = array_map( 'esc_html', $timeslots_formatted );
 			$event->timeslots_formatted = '<li>' . implode( '</li><li>', $timeslots_formatted ) . '</li>';
-            if ( is_object( $event->location ) ) {
-	            $event->gmaps_link = add_query_arg( array(
-		            'api'   => 1,
-		            'query' => implode( ' ', array(
-				            implode( ' ', $event->location->address_lines ),
-				            $event->location->locality . ',',
-				            $event->location->region,
-				            $event->location->postal_code,
-			            )
-		            ),
-	            ), 'https://www.google.com/maps/search/' );
-            }
+			if ( is_object( $event->location ) ) {
+				$event->gmaps_link = add_query_arg( array(
+					'api'   => 1,
+					'query' => implode( ' ', array(
+							implode( ' ', $event->location->address_lines ),
+							$event->location->locality . ',',
+							$event->location->region,
+							$event->location->postal_code,
+						)
+					),
+				), 'https://www.google.com/maps/search/' );
+			}
 		}
 		return $event;
 	}
@@ -281,7 +287,7 @@ class Mobilize_America {
 		$end_format  = $time_format;
 		// If it ends on a different day than it starts ...
 		if ( date( 'Y-m-d', $timeslot->start_date ) !== date( 'Y-m-d', $timeslot->end_date ) ) {
-		    $end_format = "$date_format @ $time_format";
+			$end_format = "$date_format @ $time_format";
 		}
 
 

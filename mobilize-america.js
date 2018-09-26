@@ -85,6 +85,7 @@
 				$target.data('type')
 			]);
 		}
+		window.scrollTo( 0, $heading.offset().top );
 	});
 
 	initMap = function() {
@@ -126,7 +127,7 @@
 				infowindows[ theKey ].open( map, markers[ theKey ] );
 
 				$events.trigger( 'filterByLocation', [ theKey ] );
-                window.scrollTo( 0, $heading.offset().top );
+				window.scrollTo( 0, $heading.offset().top );
 			});
 
 			google.maps.event.addListener( infowindows[ theKey ], 'closeclick', function(){
