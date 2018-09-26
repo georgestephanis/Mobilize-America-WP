@@ -156,9 +156,10 @@ class Mobilize_America {
 
 		wp_enqueue_style('mobilize-america-map', plugins_url('/mobilize-america.css', __FILE__) );
 
-		$return .= '<h3 id="events-list">' . __( 'Upcoming Events:' ) . '</h3>';
+		$return .= '<div id="events-list">';
 		$return .= '<p class="mobilize-america-event-types">' . __( 'Filter by type: ' ) . '<span id="event-' . esc_attr( $slug ) . '-types"></span></p>';
 		$return .= "\r\n<ul id='events-{$slug}' class='mobilize-america-events'></ul>\r\n";
+        $return .= '</div>';
 
 		$return .= '<script type="text/html" id="tmpl-mobilize-america-event">
 			<li class="vevent ma-event event-{{ data.id }} event-type-{{ data.event_type }}">
@@ -173,7 +174,7 @@ class Mobilize_America {
                 
 				<# if ( data.location ) { #>
 				<address class="location">
-					<a href="{{ data.gmaps_link }}" target="_blank"><strong>{{ data.location.venue }}</strong> 🗺️🔗</a> <br />
+					<a href="{{ data.gmaps_link }}" target="_blank"><strong>{{ data.location.venue }}</strong></a> <br />
 					{{ data.location.address_lines[0] }}<br />
 					{{ data.location.locality }}, {{ data.location.region }} {{ data.location.postal_code }}
 				</address>
@@ -272,16 +273,29 @@ class Mobilize_America {
 
 	public static function format_timeslots( $timeslot ) {
 		$date_format = get_option( 'date_format' );
+		$date_format = 'D n/j';
 		$time_format = get_option( 'time_format' );
+		$time_format = 'g:i a';
 
 		$start_format = "$date_format @ $time_format";
 		$end_format  = $time_format;
 		// If it ends on a different day than it starts ...
 		if ( date( 'Y-m-d', $timeslot->start_date ) !== date( 'Y-m-d', $timeslot->end_date ) ) {
-			$end_format = $start_format;
+		    $end_format = "$date_format @ $time_format";
 		}
 
-		$timeslot->formatted = sprintf( '%s — %s',
+
+		if ( date('a', $timeslot->start_date ) === date( 'a', $timeslot->end_date ) ) {
+			$start_format = str_replace( ' a', '', $start_format );
+		}
+		if ( '00' === date( 'i', $timeslot->start_date ) ) {
+			$start_format = str_replace( ':i', '', $start_format );
+		}
+		if ( '00' === date( 'i', $timeslot->end_date ) ) {
+			$end_format = str_replace( ':i', '', $end_format );
+		}
+
+		$timeslot->formatted = sprintf( '%s–%s',
 			date( $start_format, $timeslot->start_date ),
 			date( $end_format, $timeslot->end_date ) );
 
