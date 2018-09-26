@@ -7,7 +7,7 @@
 		$eventTypes   = $( '#event-' + mA.slug + '-types' ),
 		eventTypes    = _.uniq( _.pluck( mA.events.data, 'event_type' ) ),
 		lancaster     = { lat: 40.039722, lng: -76.304444 },
-		map, bounds, renderList, showMapForEvents, eventTypes,
+		map, bounds, renderList, showMapForEvents,
 		locations = {}, markers = {}, infowindows = {};
 
 	window.addEventListener( 'scroll', function() {
