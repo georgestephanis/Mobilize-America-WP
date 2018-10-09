@@ -14,6 +14,7 @@ class Mobilize_America {
 	public static function go() {
 		add_action( 'init', array( __CLASS__, 'init' ) );
 		add_action( 'admin_init', array( __CLASS__, 'admin_init' ) );
+		add_action( 'admin_menu', array( __CLASS__, 'admin_menu' ) );
 		add_action( 'enqueue_block_editor_assets', array( __CLASS__, 'enqueue_block_editor_assets' ) );
 	}
 
@@ -57,6 +58,58 @@ class Mobilize_America {
 
 		register_setting( 'general', 'mobilize_america_options', array( __CLASS__, 'sanitize_options' ) );
 	}
+
+	public static function admin_menu() {
+		add_management_page( 'Mobilize America Events Debugging', 'MA Events', 'manage_options', 'mobilize_america_events_debug', array( __CLASS__, 'tools_page' ) );
+    }
+
+    public static function tools_page() {
+	    wp_enqueue_script( 'wp-codemirror' );
+	    wp_enqueue_style( 'wp-codemirror' );
+
+	    $message = '';
+	    if ( isset( $_POST['action'] ) && 'clear_cache' === $_POST['action'] ) {
+	        $organization_id = (int) $_POST['organization_id'];
+	        delete_transient( 'mobilize_america_events_' . $organization_id );
+	        $message = 'Feed cache cleared.';
+        }
+
+	    $organization_id = (int) self::get_option( 'organization_id' );
+	    $url             = self::get_upcoming_events_url( $organization_id );
+	    $events          = self::get_upcoming_events( $organization_id );
+	    ?>
+        <div class="wrap">
+            <h1><?php _e( 'Mobilize America Events' ); ?></h1>
+            <?php if ( $message ) : ?>
+                <div class="notice notice-success dismissable"><p><?php echo esc_html( $message ); ?></p></div>
+            <?php endif; ?>
+            <p><?php _e( 'Feed URL:' ); ?> <a href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( $url ); ?></a></p>
+            <form method="post" action="<?php echo esc_url( admin_url( 'tools.php?page=mobilize_america_events_debug' ) ); ?>">
+                <input type="hidden" name="action" value="clear_cache" />
+                <input type="hidden" name="organization_id" value="<?php echo esc_attr( $organization_id ); ?>" />
+                <?php submit_button( __( 'Clear Cache and Refresh Feed' ) ); ?>
+            </form>
+
+            <h4>Parsed Feed Data:</h4>
+            <textarea id="json-events-feed" style="width: 100%; min-height: 600px;"><?php echo esc_textarea( json_encode( $events, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ); ?></textarea>
+        </div>
+        <style>
+            .CodeMirror {
+                height: auto !important;
+            }
+        </style>
+        <script>
+            jQuery(window).load(function(){
+                var editor = wp.CodeMirror.fromTextArea( document.getElementById('json-events-feed') , {
+                    mode: "application/json",
+                    lineWrapping: true,
+                    readOnly: true,
+                    lineNumbers: true
+                });
+            });
+        </script>
+	    <?php
+    }
 
 	/**
 	 * Set up option panel for settings.
@@ -207,20 +260,29 @@ class Mobilize_America {
 		return $by_location;
 	}
 
+	public static function get_upcoming_events_url( $organization_id = null ) {
+		if ( empty( $organization_id ) ) {
+			$organization_id = (int) self::get_option( 'organization_id' );
+		}
+	    return add_query_arg( array(
+		    'organization_id' => $organization_id,
+		    'timeslot_start'  => 'gte_' . ( current_time( 'timestamp' ) - ( 12 * HOUR_IN_SECONDS ) ),
+		    'per_page'        => 999,
+	    ), 'https://events.mobilizeamerica.io/api/v1/events' );
+    }
+
 	/**
 	 * Cache it in a transient for 15 minutes.
 	 *
 	 * @return array|mixed|object
 	 */
-	public static function get_upcoming_events() {
-		$url = add_query_arg( array(
-			'organization_id' => self::get_option( 'organization_id' ),
-			'timeslot_start'  => 'gte_' . ( current_time( 'timestamp' ) - ( 12 * HOUR_IN_SECONDS ) ),
-			'per_page'        => 999,
-		), 'https://events.mobilizeamerica.io/api/v1/events' );
+	public static function get_upcoming_events( $organization_id = null ) {
+	    if ( empty( $organization_id ) ) {
+		    $organization_id = (int) self::get_option( 'organization_id' );
+	    }
 
-		// if ( false === ( $events = get_transient( 'mobilize_america_events' ) ) ) {
-
+		if ( false === ( $events = get_transient( 'mobilize_america_events_' . $organization_id ) ) ) {
+			$url      = self::get_upcoming_events_url( $organization_id );
 			$response = wp_remote_get( $url );
 			$body     = wp_remote_retrieve_body( $response );
 			$events   = json_decode( $body );
@@ -236,8 +298,8 @@ class Mobilize_America {
 			// Reset the timezone back to WP's UTC default.  See https://weston.ruter.net/2013/04/02/do-not-change-the-default-timezone-from-utc-in-wordpress/
 			date_default_timezone_set('UTC');
 
-			// set_transient( 'mobilize_america_events', $events, 15 * MINUTE_IN_SECONDS );
-		// }
+			set_transient( 'mobilize_america_events', $events, 15 * MINUTE_IN_SECONDS );
+		}
 
 		return $events;
 	}
